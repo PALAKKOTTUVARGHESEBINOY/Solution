@@ -1,0 +1,91 @@
+1) A script to launch an EC2 instance (BOTO framework might be useful here) and returns the IP of instance which, then, can be used to access the app
+
+        You may create a new account and launch a free-tier instance. Don't provide access keys in the solution. Please select an Ubuntu machine which would be the host server.
+
+1a) ) Aws credentials which has acces key & Secret key must be saved in respective home directory to access aws acccount from command line
+
+ b)  #Script to launch ec2 & authorize security_group using boto
+
+import boto3
+
+#To Create a conn object to connect ec2 session 
+conn=boto3.client('ec2')
+response=conn.create_security_group(GroupName='mydefalultsecgroup' , Description='testEC2Instancegroup')
+print response #will get Group ID
+
+#authorize security group
+conn.authorize_security_group_ingress(
+           GroupID=response['GroupID'], 
+           IpProtocol='tcp', CidrIp='0.0.0.0/0', 
+           FromPort=22, 
+           ToPort=22
+           )
+#To create Key Pair Object
+keypair=conn.create_keypair(KeyName='webkey')
+
+#To Create Ec2 resource  Object
+ec2_conn = boto3.resource('ec2')
+instance = ec2_conn.create_instances(
+      ImageId='ami-e13739f6',
+      MinCount=1,
+      MaxCount=2,
+      SecurityGroups=[
+        'mydefalultsecgroup',
+      ],
+       KeyName='webkey', InstanceType='t2.micro')
+
+print instance
+   
+2) Create a "Hello World" app using Flask (http://flask.pocoo.org/docs/0.10/quickstart/)
+
+#Install Nginx in Ubuntu
+apt-get install nginx
+
+Set Up Flask
+#Create a Directory
+sudo mkdir /var/www/demoapp
+
+# set the owner of demoapp directory to ec2-user
+sudo chown -R ec2-user:ec2-user /var/www/demoapp/
+
+cd /var/www/demoapp
+
+# create a new virtual environment called venv
+virtualenv venv
+
+# activate venv
+. venv/bin/activate
+
+# install flask in venv
+pip install flask
+
+#Flask Hello World Script: 
+vi hello.py
+from flask import Flask
+app = Flask(__name__)
+
+@app.route("/")
+def hello():
+    return "Hello World!"
+
+if __name__ == "__main__":
+    app.run(host='0.0.0.0', port=8080)
+
+
+ 
+
+3) A deployment solution using some configuration management tool
+
+        You may choose SaltStack / Ansible or whichever tool you are comfortable with. Make two environments for production and testing.
+
+ 1) Create Playbooks yml  for Production & testing 
+ 2) Define Roles,handlers and yml files to install , start , deploy the application
+
+ 
+
+
+
+ 
+
+
+ 
